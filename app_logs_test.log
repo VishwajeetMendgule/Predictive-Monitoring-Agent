@@ -1,0 +1,9 @@
+{"timestamp": "2026-01-01T00:00:00Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-01-01T00:00:00Z", "level": "DEBUG", "component": "cache", "message": "Cache refreshed."}
+{"timestamp": "2026-01-01T00:01:00Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-01-01T00:02:00Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-01-01T00:05:00Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-01-01T00:06:00Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-01-01T00:07:00Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-01-01T00:10:00Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-01-01T00:11:00Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}

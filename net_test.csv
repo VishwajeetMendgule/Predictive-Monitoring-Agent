@@ -1,0 +1,13 @@
+timestamp,resource,value,hostname
+2026-01-01T00:00:00Z,network_io_mbit_sec,386.23,prod-web-srv-01
+2026-01-01T00:01:00Z,network_io_mbit_sec,411.54,prod-web-srv-01
+2026-01-01T00:02:00Z,network_io_mbit_sec,404.24,prod-web-srv-01
+2026-01-01T00:03:00Z,network_io_mbit_sec,388.63,prod-web-srv-01
+2026-01-01T00:04:00Z,network_io_mbit_sec,406.58,prod-web-srv-01
+2026-01-01T00:05:00Z,network_io_mbit_sec,408.59,prod-web-srv-01
+2026-01-01T00:06:00Z,network_io_mbit_sec,410.4,prod-web-srv-01
+2026-01-01T00:07:00Z,network_io_mbit_sec,406.59,prod-web-srv-01
+2026-01-01T00:08:00Z,network_io_mbit_sec,408.43,prod-web-srv-01
+2026-01-01T00:09:00Z,network_io_mbit_sec,410.8,prod-web-srv-01
+2026-01-01T00:10:00Z,network_io_mbit_sec,423.33,prod-web-srv-01
+2026-01-01T00:11:00Z,network_io_mbit_sec,47.71,prod-web-srv-01

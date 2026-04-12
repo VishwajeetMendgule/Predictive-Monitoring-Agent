@@ -1,0 +1,13 @@
+timestamp,resource,value,hostname
+2026-01-01T00:00:00Z,memory_utilization_pct,49.64,prod-web-srv-01
+2026-01-01T00:01:00Z,memory_utilization_pct,49.26,prod-web-srv-01
+2026-01-01T00:02:00Z,memory_utilization_pct,49.97,prod-web-srv-01
+2026-01-01T00:03:00Z,memory_utilization_pct,49.73,prod-web-srv-01
+2026-01-01T00:04:00Z,memory_utilization_pct,50.41,prod-web-srv-01
+2026-01-01T00:05:00Z,memory_utilization_pct,50.1,prod-web-srv-01
+2026-01-01T00:06:00Z,memory_utilization_pct,51.43,prod-web-srv-01
+2026-01-01T00:07:00Z,memory_utilization_pct,51.47,prod-web-srv-01
+2026-01-01T00:08:00Z,memory_utilization_pct,50.96,prod-web-srv-01
+2026-01-01T00:09:00Z,memory_utilization_pct,50.98,prod-web-srv-01
+2026-01-01T00:10:00Z,memory_utilization_pct,50.39,prod-web-srv-01
+2026-01-01T00:11:00Z,memory_utilization_pct,81.26,prod-web-srv-01

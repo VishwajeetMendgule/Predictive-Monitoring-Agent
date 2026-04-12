@@ -1,0 +1,13 @@
+timestamp,resource,value,hostname
+2026-01-01T00:00:00Z,cpu_utilization_pct,41.88,prod-web-srv-01
+2026-01-01T00:01:00Z,cpu_utilization_pct,38.37,prod-web-srv-01
+2026-01-01T00:02:00Z,cpu_utilization_pct,41.26,prod-web-srv-01
+2026-01-01T00:03:00Z,cpu_utilization_pct,41.7,prod-web-srv-01
+2026-01-01T00:04:00Z,cpu_utilization_pct,35.4,prod-web-srv-01
+2026-01-01T00:05:00Z,cpu_utilization_pct,34.76,prod-web-srv-01
+2026-01-01T00:06:00Z,cpu_utilization_pct,41.0,prod-web-srv-01
+2026-01-01T00:07:00Z,cpu_utilization_pct,42.11,prod-web-srv-01
+2026-01-01T00:08:00Z,cpu_utilization_pct,39.25,prod-web-srv-01
+2026-01-01T00:09:00Z,cpu_utilization_pct,45.35,prod-web-srv-01
+2026-01-01T00:10:00Z,cpu_utilization_pct,41.46,prod-web-srv-01
+2026-01-01T00:11:00Z,cpu_utilization_pct,70.01,prod-web-srv-01
