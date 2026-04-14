@@ -1,5 +1,4 @@
 import joblib 
-from Process_logs import processed_logs
 import numpy as np
 import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # To Surppress all logs/warnings
@@ -27,11 +26,11 @@ def create_lstm_sequences(data_array, time_steps=5):
         # Finally creating it to a np array
     return np.array(X), np.array(y)
 
-def train_predictionmodel():
+def train_predictionmodel(data):
 
     scaler = joblib.load("data_scaler.pkl")
     
-    scaleddata = scaler.transform(processed_logs().values) # data to be used for traning
+    scaleddata = scaler.transform(data.values) # data to be used for traning
     x_train,y_train = create_lstm_sequences(scaleddata)
 
 
@@ -53,7 +52,7 @@ def train_predictionmodel():
     model.add(keras.layers.Dense(x_train.shape[2]))
 
     model.summary()
-    model.compile(optimizer='adam', loss=Huber())
+    model.compile(optimizer='adam', loss='mse')
 
     traning = model.fit(x_train, y_train, epochs= 50, batch_size = 32)
 
@@ -63,6 +62,8 @@ def train_predictionmodel():
 
 def lstm_model(data):
     scaler = joblib.load("data_scaler.pkl")
+    import os
+    print("🔍 Python is currently looking inside:", os.getcwd())
 
     try:
         model = load_model('my_lstm_model.h5')
@@ -78,13 +79,13 @@ def lstm_model(data):
 
     return predictions
 
-    
-    # print(logs_scaled)
+ 
 
-# x,y = create_lstm_sequences(processed_logs().values)
-# print("This is x")
-# print(x)
-# print("This is Y")
-# print(y)
+# For Tranings model 
+# from ReadLogs import readtrainlogs
+# from Process_logs import processed_logs
+# logs,cpu,memory,network = readtrainlogs()
 
-# train_predictionmodel()
+# train = processed_logs(logs,cpu,memory,network)
+
+# train_predictionmodel(train)
