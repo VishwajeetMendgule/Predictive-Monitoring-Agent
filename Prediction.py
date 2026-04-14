@@ -4,8 +4,8 @@ import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # To Surppress all logs/warnings
 
 from tensorflow import keras 
-from tensorflow.keras.losses import Huber
 from tensorflow.keras.models import load_model
+from tensorflow.keras.losses import MeanSquaredError
 
 def create_lstm_sequences(data_array, time_steps=5):
     """
@@ -52,23 +52,21 @@ def train_predictionmodel(data):
     model.add(keras.layers.Dense(x_train.shape[2]))
 
     model.summary()
-    model.compile(optimizer='adam', loss='mse')
+    model.compile(optimizer='adam', loss=MeanSquaredError())
 
     traning = model.fit(x_train, y_train, epochs= 50, batch_size = 32)
 
-    model.save('my_lstm_model.h5')
+    model.save('lstm_model.keras')
 
     return model
 
 def lstm_model(data):
     scaler = joblib.load("data_scaler.pkl")
-    import os
-    print("🔍 Python is currently looking inside:", os.getcwd())
 
     try:
-        model = load_model('my_lstm_model.h5')
-    except Exception:
-        print("Model not found. ERROR")
+        model = load_model('lstm_model.keras')
+    except Exception as e:
+        print(f"Model not found. ERROR \n {e}")
         return None
     
     data_scaled = scaler.transform(data.values)
@@ -82,10 +80,10 @@ def lstm_model(data):
  
 
 # For Tranings model 
-# from ReadLogs import readtrainlogs
-# from Process_logs import processed_logs
-# logs,cpu,memory,network = readtrainlogs()
+from ReadLogs import readtrainlogs
+from Process_logs import processed_logs
+logs,cpu,memory,network = readtrainlogs()
 
-# train = processed_logs(logs,cpu,memory,network)
+train = processed_logs(logs,cpu,memory,network)
 
-# train_predictionmodel(train)
+train_predictionmodel(train)
