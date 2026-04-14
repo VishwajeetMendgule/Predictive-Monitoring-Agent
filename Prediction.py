@@ -5,6 +5,8 @@ import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # To Surppress all logs/warnings
 
 from tensorflow import keras 
+from tensorflow.keras.losses import Huber
+from tensorflow.keras.models import load_model
 
 def create_lstm_sequences(data_array, time_steps=5):
     """
@@ -27,15 +29,62 @@ def create_lstm_sequences(data_array, time_steps=5):
 
 def train_predictionmodel():
 
-    logs = processed_logs()
+    scaler = joblib.load("data_scaler.pkl")
     
+    scaleddata = scaler.transform(processed_logs().values) # data to be used for traning
+    x_train,y_train = create_lstm_sequences(scaleddata)
+
+
+    model = keras.models.Sequential()
+
+    # First Layer
+    model.add(keras.layers.LSTM(64, return_sequences = True, input_shape = (x_train.shape[1], x_train.shape[2])))
+
+    # Secound Layer
+    model.add(keras.layers.LSTM(128, return_sequences = False))
+
+    # Third Layer
+    model.add(keras.layers.Dense(128,activation="relu"))
+    
+    # Fourth Layer to drop some neurons
+    model.add(keras.layers.Dropout(0.2))
+
+    #final layer 
+    model.add(keras.layers.Dense(x_train.shape[2]))
+
+    model.summary()
+    model.compile(optimizer='adam', loss=Huber())
+
+    traning = model.fit(x_train, y_train, epochs= 50, batch_size = 32)
+
+    model.save('my_lstm_model.h5')
+
+    return model
+
+def lstm_model(data):
     scaler = joblib.load("data_scaler.pkl")
 
-    logs_scaled = scaler.transform(logs.values)  # data to be used for traning
+    try:
+        model = load_model('my_lstm_model.h5')
+    except Exception:
+        print("Model not found. ERROR")
+        return None
+    
+    data_scaled = scaler.transform(data.values)
+    x_test,_ = create_lstm_sequences(data_scaled)
+     
+    predictions = model.predict(x_test)
+    predictions = scaler.inverse_transform(predictions)
+
+    return predictions
+
+    
     # print(logs_scaled)
 
-x,y = create_lstm_sequences(processed_logs().values)
-print("This is x")
-print(x)
-print("This is Y")
-print(y)
+# x,y = create_lstm_sequences(processed_logs().values)
+# print("This is x")
+# print(x)
+# print("This is Y")
+# print(y)
+
+train_predictionmodel()
