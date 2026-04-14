@@ -1,4 +1,5 @@
 import joblib 
+from Process_logs import processed_logs
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
@@ -8,23 +9,9 @@ from tensorflow import keras
 
 def prediction_model():
 
+    logs = processed_logs()
+
 
     scaler = joblib.load("data_scaler.pkl")
     pass
 
-# model = keras.models.Sequential()
-cpu = pd.read_csv('cpu_test.csv').rename(columns={'value': 'cpu'})[['timestamp','cpu']]
-memory = pd.read_csv('mem_test.csv').rename(columns={'value': 'memory'})[['timestamp','memory']]
-network = pd.read_csv('net_test.csv').rename(columns={'value': 'network'})[['timestamp','network']]
-
-cpu['time'] = pd.to_datetime(cpu['timestamp']).dt.strftime('%M:%S')
-memory['time'] = pd.to_datetime(memory['timestamp']).dt.strftime('%M:%S')
-network['time'] = pd.to_datetime(network['timestamp']).dt.strftime('%M:%S')
-
-plt.plot(cpu['time'].values,cpu['cpu'].values)
-plt.plot(memory['time'].values,memory['memory'].values)
-plt.plot(network['time'].values,network['network'].values)
-plt.xlabel("Time") 
-plt.ylabel("Values") 
-plt.legend()
-plt.show()
