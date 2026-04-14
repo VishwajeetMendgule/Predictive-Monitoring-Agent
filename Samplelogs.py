@@ -6,11 +6,11 @@ import random
 from datetime import datetime, timedelta
 
 def generate_large_training_data():
-    start_time = datetime(2026, 1, 1, 0, 0, 0)
+    start_time = datetime(2026, 3, 1, 0, 0, 0)
     
     # 1. CHANGE THIS for more/less data (e.g., 30 days = 30 * 24 * 60)
-    days_to_simulate = 7
-    total_minutes = 12 # days_to_simulate * 24 * 60 
+    days_to_simulate = 1
+    total_minutes = days_to_simulate * 24 * 60  # days_to_simulate * 24 * 60 
     hostname = "prod-web-srv-01"
 
     cpu_data, mem_data, net_data, logs = [], [], [], []

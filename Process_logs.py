@@ -1,21 +1,16 @@
 import pandas as pd 
-import numpy as np
 from functools import reduce
+from ReadLogs import readtestlogs,readtrainlogs
 
 def processed_logs():
-    # Fetch logs
-    logs = pd.read_json('app_logs_train.log',lines=True)
     
+    logs,cpu,memory,network = readtestlogs()
+
     # conerting time to dattime format
     logs['timestamp'] = pd.to_datetime(logs['timestamp'])
     
     # Counting all logs in a minute 
     logs_count = logs.groupby(['timestamp','level'])['level'].count().unstack(fill_value=0).reset_index().copy()
-    
-    #  Fetching only timestamp and value where value column name is changed to CPU,MEMORY,NETWORK resp
-    cpu = pd.read_csv('cpu_train.csv').rename(columns={'value': 'cpu'})[['timestamp','cpu']]
-    memory = pd.read_csv('mem_train.csv').rename(columns={'value': 'memory'})[['timestamp','memory']]
-    network = pd.read_csv('net_train.csv').rename(columns={'value': 'network'})[['timestamp','network']]
     
     cpu['timestamp'] = pd.to_datetime(cpu['timestamp'])
     memory['timestamp'] = pd.to_datetime(memory['timestamp'])
@@ -26,5 +21,16 @@ def processed_logs():
     
     # Combining all metrics with logs
     final = pd.merge(df,logs_count, on='timestamp', how= 'outer')
+    final.fillna(0, inplace=True)
+
+    # Define the exact log columns your model expects
+    expected_log_columns = ['DEBUG', 'ERROR', 'INFO', 'WARN']
+    
+    # Loop through and add any missing columns with a value of 0
+    for col in expected_log_columns:
+        if col not in final.columns:
+            final[col] = 0
     
     return final[['cpu','memory','network','DEBUG','ERROR','INFO','WARN']]
+
+# print(processed_logs())
