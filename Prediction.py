@@ -80,10 +80,10 @@ def lstm_model(data):
  
 
 # For Tranings model 
-from ReadLogs import readtrainlogs
-from Process_logs import processed_logs
-logs,cpu,memory,network = readtrainlogs()
+# from ReadLogs import readtrainlogs
+# from Process_logs import processed_logs
+# logs,cpu,memory,network = readtrainlogs()
 
-train = processed_logs(logs,cpu,memory,network)
+# train = processed_logs(logs,cpu,memory,network)
 
-train_predictionmodel(train)
+# train_predictionmodel(train)
