@@ -2,9 +2,9 @@ import pandas as pd
 from functools import reduce
 from ReadLogs import readtestlogs,readtrainlogs
 
-def processed_logs():
+def processed_logs(logs,cpu,memory,network):
     
-    logs,cpu,memory,network = readtrainlogs()
+    # logs,cpu,memory,network = readtrainlogs()
 
     # conerting time to dattime format
     logs['timestamp'] = pd.to_datetime(logs['timestamp'])

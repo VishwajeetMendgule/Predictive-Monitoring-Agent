@@ -87,4 +87,4 @@ def lstm_model(data):
 # print("This is Y")
 # print(y)
 
-train_predictionmodel()
+# train_predictionmodel()
