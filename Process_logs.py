@@ -4,7 +4,7 @@ from ReadLogs import readtestlogs,readtrainlogs
 
 def processed_logs():
     
-    logs,cpu,memory,network = readtestlogs()
+    logs,cpu,memory,network = readtrainlogs()
 
     # conerting time to dattime format
     logs['timestamp'] = pd.to_datetime(logs['timestamp'])
