@@ -2,6 +2,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 from Process_logs import processed_logs
+from ReadLogs import readtrainlogs
 import joblib
 
 class Anomaly_model:
@@ -37,4 +38,7 @@ class Anomaly_model:
         return critical_anomalies
 
 m = Anomaly_model()
-print(m.an_model(processed_logs()))
+logs,cpu,memory,network = readtrainlogs()
+
+test = processed_logs(logs,cpu,memory,network)
+print(m.an_model(test))

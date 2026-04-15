@@ -5,7 +5,6 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # To Surppress all logs/warnings
 
 from tensorflow import keras 
 from tensorflow.keras.models import load_model
-from tensorflow.keras.losses import MeanSquaredError
 
 def create_lstm_sequences(data_array, time_steps=5):
     """
@@ -45,14 +44,14 @@ def train_predictionmodel(data):
     # Third Layer
     model.add(keras.layers.Dense(128,activation="relu"))
     
-    # Fourth Layer to drop some neurons
+    # Fourth Layer to drop some data
     model.add(keras.layers.Dropout(0.2))
 
     #final layer 
     model.add(keras.layers.Dense(x_train.shape[2]))
 
     model.summary()
-    model.compile(optimizer='adam', loss=MeanSquaredError())
+    model.compile(optimizer='adam', loss="mae",metrics=[keras.metrics.RootMeanSquaredError()])
 
     traning = model.fit(x_train, y_train, epochs= 50, batch_size = 32)
 
@@ -79,7 +78,7 @@ def lstm_model(data):
 
  
 
-# For Tranings model 
+# For Traning model 
 # from ReadLogs import readtrainlogs
 # from Process_logs import processed_logs
 # logs,cpu,memory,network = readtrainlogs()
