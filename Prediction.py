@@ -27,7 +27,7 @@ def create_lstm_sequences(data_array, time_steps=5):
 
 def train_predictionmodel(data):
 
-    scaler = joblib.load("data_scaler.pkl")
+    scaler = joblib.load("lstm_scaler.pkl")
     
     scaleddata = scaler.transform(data.values) # data to be used for traning
     x_train,y_train = create_lstm_sequences(scaleddata)
@@ -60,17 +60,19 @@ def train_predictionmodel(data):
     return model
 
 def lstm_model(data):
-    scaler = joblib.load("data_scaler.pkl")
+    scaler = joblib.load("lstm_scaler.pkl")
 
     try:
         model = load_model('lstm_model.keras')
     except Exception as e:
         print(f"Model not found. ERROR \n {e}")
         return None
-    
     data_scaled = scaler.transform(data.values)
-    x_test,_ = create_lstm_sequences(data_scaled)
-     
+    if data.__len__() != 5:
+    
+      x_test,_ = create_lstm_sequences(data_scaled)
+    else :
+        x_test = np.array([data_scaled])
     predictions = model.predict(x_test)
     predictions = scaler.inverse_transform(predictions)
 
@@ -86,3 +88,11 @@ def lstm_model(data):
 # train = processed_logs(logs,cpu,memory,network)
 
 # train_predictionmodel(train)
+
+# from sklearn.preprocessing import MinMaxScaler
+
+# lstm_scaler = MinMaxScaler(feature_range=(0, 1))
+# lstm_scaler.fit_transform(train.values)
+    
+#     # ... train model ...
+# joblib.dump(lstm_scaler, 'lstm_scaler.pkl')

@@ -5,48 +5,23 @@ from dotenv import find_dotenv, load_dotenv
 load_dotenv(find_dotenv())
 # Intigrating HCL AI cafe 
 
-def generate_answer(query):
-    PROMPT_TEMPLATE = """
-You are an intelligent Predictive Monitoring system specialized in analyzing Application Logs.
+def generate_answer(currentdata,futuredata,currentlogs):
+    prompt = f"""Act as an AIOps SRE. Analyze the telemetry below to diagnose impending failures and root causes. 
+    Output ONLY valid, raw JSON (no markdown, no backticks).
 
-Your task is to analyze the logs, Predicyed values by LSTM and give proper reasigionig for the future failure.
+INPUTS:
+Current System Metrics: {currentdata}
+LSTM Predictions(Next 1-5 Mins): {futuredata}
+Logs: {currentlogs}
 
-If the input is **not** a movie review, respond with the exact JSON below:
-
----
-### INPUT QUERY
-"{user_query}"
----
-
-### TASK OBJECTIVES
-1. Determine the **overall sentiment** as one of: Positive, Negative, Neutral, or Mixed.  
-2. Estimate the **sentiment intensity** on a scale of 1-5 (1 = very weak, 5 = very strong).  
-3. Identify the **dominant emotion** (e.g., happiness, anger, frustration, sadness, excitement, gratitude).  
-4. Detect the **subject or target** of sentiment, if any (e.g., movie title, actor, director, scene).  
-5. Provide a **brief reasoning** explaining why that sentiment was chosen.  
-6. Output the result strictly in the JSON format shown below.
-
----
-
-### OUTPUT FORMAT (JSON)
+SCHEMA:
 {{
-  "sentiment": "<Positive | Negative | Neutral | Mixed>",
-  "intensity": "<1-5>",
-  "dominant_emotion": "<emotion>",
-  "target": "<what the sentiment is about, or 'None'>",
-  "reasoning": "<brief explanation in 1-2 sentences>"
-}}
-
----
-
-### INSTRUCTIONS
-- Analyze only movie reviews; reject any non-movie review input as described above.  
-- Be precise and consistent.  
-- Base sentiment strictly on the language used — not assumptions.  
-- Avoid moral judgments or opinions.  
-- Do not include any text outside the JSON.  
-"""
-    prompt = PROMPT_TEMPLATE.format(user_query=query)
+  "alert_severity": "CRITICAL" | "WARNING" | "STABLE",
+  "impending_failure_type": "Brief failure name (e.g., JVM OutOfMemory)",
+  "root_cause_analysis": "Concise root cause correlation. Maximum 2 sentences.",
+  "estimated_time_to_impact_mins": <integer>,
+  "recommended_remediation": "One immediate actionable step."
+}}"""
     deploymentName = "gpt-4.1"
     apiVerion = "2024-12-01-preview"
     CHAT_MODEL_API = f"https://aicafe.hcl.com/AICafeService/api/v1/subscription/openai/deployments/{deploymentName}/chat/completions?api-version={apiVerion}"
@@ -65,7 +40,7 @@ If the input is **not** a movie review, respond with the exact JSON below:
             "content": prompt
             }
         ],
-        "maxTokens": 100,
+        "maxTokens": 110,
         "temperature": 0
     }
 
@@ -77,5 +52,5 @@ If the input is **not** a movie review, respond with the exact JSON below:
         print(f"Chat model error {response.status_code}: {response.text}")
         return None
     
-query = "Hey!"
-print(generate_answer(query))
+# query = "Hey!"
+# print(generate_answer(query))

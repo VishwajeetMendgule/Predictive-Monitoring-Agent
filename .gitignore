@@ -7,3 +7,5 @@ pagenv
 *.pkl
 
 *.ipynb
+
+*.keras

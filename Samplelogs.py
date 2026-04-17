@@ -10,15 +10,15 @@ def generate_large_training_data():
     
     # 1. CHANGE THIS for more/less data (e.g., 30 days = 30 * 24 * 60)
     days_to_simulate = 14
-    total_minutes = days_to_simulate * 24 * 60  # days_to_simulate * 24 * 60 
+    total_minutes = 10  # days_to_simulate * 24 * 60 
     hostname = "prod-web-srv-01"
 
     cpu_data, mem_data, net_data, logs = [], [], [], []
 
     # 2. Decide randomly when the 3 failures will happen
-    failure_start_times = random.sample(range(100, total_minutes - 60), 114)
+    # failure_start_times = random.sample(range(100, total_minutes - 60), 2)
 
-    # failure_start_times = random.sample(range(1, total_minutes), 1) # Test dataset 
+    failure_start_times = random.sample(range(1, total_minutes), 2) # Test dataset 
     
     print(f"Generating {days_to_simulate} days of data...")
     print(f"Failures will occur at minutes: {sorted(failure_start_times)}")
@@ -84,12 +84,12 @@ def generate_large_training_data():
         net_data.append([ts_str, "network_io_mbit_sec", round(net, 2), hostname])
 
     # Save Metrics to CSV
-    pd.DataFrame(cpu_data, columns=["timestamp", "resource", "value", "hostname"]).to_csv("cpu_train.csv", index=False)
-    pd.DataFrame(mem_data, columns=["timestamp", "resource", "value", "hostname"]).to_csv("mem_train.csv", index=False)
-    pd.DataFrame(net_data, columns=["timestamp", "resource", "value", "hostname"]).to_csv("net_train.csv", index=False)
+    pd.DataFrame(cpu_data, columns=["timestamp", "resource", "value", "hostname"]).to_csv("cpu_test.csv", index=False)
+    pd.DataFrame(mem_data, columns=["timestamp", "resource", "value", "hostname"]).to_csv("mem_test.csv", index=False)
+    pd.DataFrame(net_data, columns=["timestamp", "resource", "value", "hostname"]).to_csv("net_test.csv", index=False)
 
     # Save Logs to JSON lines
-    with open("app_logs_train.log", "w") as f:
+    with open("app_logs_test.log", "w") as f:
         for log in logs:
             f.write(json.dumps(log) + "\n")
             

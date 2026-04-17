@@ -2,7 +2,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 from Process_logs import processed_logs
-from ReadLogs import readtrainlogs
+from ReadLogs import readtrainlogs,readtestlogs
 import joblib
 
 class Anomaly_model:
@@ -14,13 +14,13 @@ class Anomaly_model:
     def model_train(self,logs: pd.DataFrame):
         data = logs.values
         scaler = StandardScaler()
-        model = IsolationForest(contamination=0.05, random_state=42)
+        model = IsolationForest(contamination=0.35, random_state=42)
     
         X_scaled = scaler.fit_transform(data)
         model.fit(X_scaled)
     
         joblib.dump(model, 'anomaly_model.pkl')
-        joblib.dump(scaler, 'data_scaler.pkl')
+        joblib.dump(scaler, 'iso_scaler.pkl')
         
         self.model = model
         self.scaler = scaler
@@ -34,11 +34,11 @@ class Anomaly_model:
         log['anomaly_score'] = self.model.decision_function(X_scaled)
         log['is_anomaly'] = self.model.predict(X_scaled)
     
-        critical_anomalies = log[(log['is_anomaly'] == -1) & (log['ERROR'] > 0)]
+        critical_anomalies = log[(log['is_anomaly'] == -1) & ((log['ERROR'] > 0) | (log['WARN'] > 0))]
         return critical_anomalies
 
-m = Anomaly_model()
-logs,cpu,memory,network = readtrainlogs()
+# m = Anomaly_model()
+# logs,cpu,memory,network = readtrainlogs()
 
-test = processed_logs(logs,cpu,memory,network)
-print(m.an_model(test))
+# test = processed_logs(logs,cpu,memory,network)
+# print(m.model_train(test))
