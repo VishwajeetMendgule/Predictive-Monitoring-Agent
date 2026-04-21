@@ -33,4 +33,5 @@ def processed_logs(logs,cpu,memory,network):
     
     return final[['cpu','memory','network','DEBUG','ERROR','INFO','WARN']]
 
-# print(processed_logs())
+# logs,cpu,memory,network=readtestlogs()
+# print(processed_logs(logs,cpu,memory,network))

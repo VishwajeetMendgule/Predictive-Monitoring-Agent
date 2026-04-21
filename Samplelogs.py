@@ -6,7 +6,7 @@ import random
 from datetime import datetime, timedelta
 
 def generate_large_training_data():
-    start_time = datetime(2026, 3, 1, 0, 0, 0)
+    start_time = datetime(2026, 4, 1, 0, 0, 0)
     
     # 1. CHANGE THIS for more/less data (e.g., 30 days = 30 * 24 * 60)
     days_to_simulate = 14
@@ -18,7 +18,7 @@ def generate_large_training_data():
     # 2. Decide randomly when the 3 failures will happen
     # failure_start_times = random.sample(range(100, total_minutes - 60), 2)
 
-    failure_start_times = random.sample(range(1, total_minutes), 2) # Test dataset 
+    failure_start_times = random.sample(range(1, total_minutes), 4) # Test dataset 
     
     print(f"Generating {days_to_simulate} days of data...")
     print(f"Failures will occur at minutes: {sorted(failure_start_times)}")

@@ -16,11 +16,11 @@ Logs: {currentlogs}
 
 SCHEMA:
 {{
-  "alert_severity": "CRITICAL" | "WARNING" | "STABLE",
-  "impending_failure_type": "Brief failure name (e.g., JVM OutOfMemory)",
-  "root_cause_analysis": "Concise root cause correlation. Maximum 2 sentences.",
-  "estimated_time_to_impact_mins": <integer>,
-  "recommended_remediation": "One immediate actionable step."
+  "severity": "CRITICAL" | "WARNING" | "STABLE",
+  "failure_type": "Brief failure name (e.g., JVM OutOfMemory)",
+  "RootCause": "Concise root cause correlation. Maximum 2 sentences.",
+  "impactmins": <integer>,
+  "RecommendedAction": "One immediate actionable step."
 }}"""
     deploymentName = "gpt-4.1"
     apiVerion = "2024-12-01-preview"
@@ -51,6 +51,9 @@ SCHEMA:
     else:
         print(f"Chat model error {response.status_code}: {response.text}")
         return None
-    
-# query = "Hey!"
-# print(generate_answer(query))
+
+
+# if __name__ == "__main__":
+
+#   query = "Hey!"
+#   print(generate_answer(query))
