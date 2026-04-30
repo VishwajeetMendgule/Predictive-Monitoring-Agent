@@ -18,7 +18,7 @@ def generate_large_training_data():
     # 2. Decide randomly when the 3 failures will happen
     # failure_start_times = random.sample(range(100, total_minutes - 60), 2)
 
-    failure_start_times = random.sample(range(1, total_minutes), 4) # Test dataset 
+    failure_start_times = random.sample(range(1, total_minutes), 0) # Test dataset 
     
     print(f"Generating {days_to_simulate} days of data...")
     print(f"Failures will occur at minutes: {sorted(failure_start_times)}")
