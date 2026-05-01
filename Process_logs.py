@@ -31,7 +31,7 @@ def processed_logs(logs,cpu,memory,network):
         if col not in final.columns:
             final[col] = 0
     
-    return final[['cpu','memory','network','DEBUG','ERROR','INFO','WARN']]
+    return final
 
 # logs,cpu,memory,network=readtestlogs()
 # print(processed_logs(logs,cpu,memory,network))

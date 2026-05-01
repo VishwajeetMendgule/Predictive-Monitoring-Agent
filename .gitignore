@@ -8,4 +8,9 @@ pagenv
 
 *.ipynb
 
+.vscode
+
 *.keras
+
+app_logs_train.log
+

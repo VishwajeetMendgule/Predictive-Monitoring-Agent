@@ -5,7 +5,7 @@ from dotenv import find_dotenv, load_dotenv
 load_dotenv(find_dotenv())
 # Intigrating HCL AI cafe 
 
-def generate_answer(currentdata,futuredata,currentlogs):
+def Model_prompt(currentdata,futuredata,currentlogs):
     prompt = f"""Act as an AIOps SRE. Analyze the telemetry below to diagnose impending failures and root causes. 
     Output ONLY valid, raw JSON (no markdown, no backticks).
 
@@ -22,6 +22,15 @@ SCHEMA:
   "impactmins": <integer>,
   "RecommendedAction": "One immediate actionable step."
 }}"""
+    return prompt
+
+def chat():
+    prompt = """ """
+    return prompt
+
+
+def generate_answer(prompt):
+    
     deploymentName = "gpt-4.1"
     apiVerion = "2024-12-01-preview"
     CHAT_MODEL_API = f"https://aicafe.hcl.com/AICafeService/api/v1/subscription/openai/deployments/{deploymentName}/chat/completions?api-version={apiVerion}"

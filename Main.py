@@ -2,16 +2,19 @@ from ReadLogs import readtestlogs,readtrainlogs
 from Prediction import lstm_model
 from Process_logs import processed_logs
 from Anomaly_model import Anomaly_model 
-from Response import generate_answer
+from Response import generate_answer,Model_prompt
 import matplotlib.pyplot as plt
 import json
+import sqlite3 
 import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 logs,cpu,memory,network = readtestlogs()
 
 test = processed_logs(logs,cpu,memory,network)
-
+conn = sqlite3.connect('logs.db')
+# test.to_sql('server_metrics', conn, if_exists='append', index=False)
+test = test[['cpu','memory','network','DEBUG','ERROR','INFO','WARN']].copy()
 am = Anomaly_model()
 Anomaly = am.an_model(test)
 
@@ -28,7 +31,8 @@ if not Anomaly.empty:
     current_dict = test[['cpu','memory','network','ERROR','WARN']].iloc[-1].to_dict()
     current = json.dumps(current_dict,indent=2)
     applogs = json.dumps(logs[['level','component','message']].iloc[-1].to_dict(),indent=2)
-    # Response = json.loads(generate_answer(future_data,current,applogs))
+    # prompt = Model_prompt(future_data,current,applogs)
+    # Response = json.loads(generate_answer(prompt))
     # print(f"Severity: {Response["severity"]}")
     # print(f"Root cause: {Response["failure_type"]}")
     # print(f"Impact In: {Response["impactmins"]}mins")
@@ -39,25 +43,3 @@ else:
     print("✅ System is stable.")
     # This block will tigure only if anomaly is not deteceted 
 
-
-plt.figure(figsize=(14, 10))
-plt.subplot(3, 1, 1)
-plt.plot(test.index, test['cpu'], label='CPU', color='Red', linewidth=2)
-plt.title('CPU Utilization')
-plt.ylabel('CPU %')
-plt.grid(True, alpha=0.3)
-
-plt.subplot(3, 1, 2)
-plt.plot(test.index, test['memory'], label='CPU', color='blue', linewidth=2)
-plt.title('Memory Utilization')
-plt.ylabel('Memory %')
-plt.grid(True, alpha=0.3)
-
-plt.subplot(3, 1, 3)
-plt.plot(test.index, test['network'], label='CPU', color='Yellow', linewidth=2)
-plt.title('Network Utilization')
-plt.ylabel('Network')
-plt.grid(True, alpha=0.3)
-
-plt.tight_layout()
-plt.show()
