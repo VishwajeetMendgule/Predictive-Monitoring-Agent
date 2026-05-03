@@ -121,3 +121,30 @@
 {"timestamp": "2026-05-03T15:13:41Z", "level": "INFO", "component": "system", "message": "Health check OK."}
 {"timestamp": "2026-05-03T15:14:41Z", "level": "INFO", "component": "system", "message": "Health check OK."}
 {"timestamp": "2026-05-03T15:16:41Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-05-03T15:57:20Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-05-03T15:58:20Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-05-03T16:00:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:01:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:02:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:03:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:04:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:04:20Z", "level": "ERROR", "component": "system", "message": "OutOfMemoryError: Java heap space."}
+{"timestamp": "2026-05-03T16:05:20Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-05-03T16:06:20Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-05-03T16:08:20Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-05-03T16:09:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:10:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:11:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:12:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:13:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:13:20Z", "level": "ERROR", "component": "system", "message": "OutOfMemoryError: Java heap space."}
+{"timestamp": "2026-05-03T16:16:20Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-05-03T16:17:20Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-05-03T16:18:20Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-05-03T16:19:20Z", "level": "INFO", "component": "system", "message": "Health check OK."}
+{"timestamp": "2026-05-03T16:20:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:21:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:22:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:23:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:24:20Z", "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."}
+{"timestamp": "2026-05-03T16:24:20Z", "level": "ERROR", "component": "system", "message": "OutOfMemoryError: Java heap space."}
