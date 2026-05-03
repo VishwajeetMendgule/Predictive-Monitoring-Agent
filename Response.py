@@ -6,30 +6,61 @@ load_dotenv(find_dotenv())
 # Intigrating HCL AI cafe 
 
 def Model_prompt(currentdata,futuredata,currentlogs):
-    prompt = f"""Act as an AIOps SRE. Analyze the telemetry below to diagnose impending failures and root causes. 
-    Output ONLY valid, raw JSON (no markdown, no backticks).
-
-INPUTS:
-Current System Metrics: {currentdata}
-LSTM Predictions(Next 1-5 Mins): {futuredata}
-Logs: {currentlogs}
-
+    prompt = [{
+            "role": "system",
+            "content": 
+             """You are an AIOps SRE. Analyze telemetry and predict failures. 
+- Never output anything except valid JSON.
 SCHEMA:
 {{
   "severity": "CRITICAL" | "WARNING" | "STABLE",
   "failure_type": "Brief failure name (e.g., JVM OutOfMemory)",
   "RootCause": "Concise root cause correlation. Maximum 2 sentences.",
-  "impactmins": <integer>,
+  "impactmins": 0,
   "RecommendedAction": "One immediate actionable step."
-}}"""
+}}"""},
+{"role": "user","content": f"""Current System Metrics: {currentdata}
+LSTM Predictions(Next 1-5 Mins): {futuredata}
+Logs: {currentlogs}
+"""}]
     return prompt
 
-def chat():
-    prompt = """ """
+
+def chat(query:str,pastdata:str = None):
+    prompt = [{
+            "role": "system",
+            "content":"""You are a task-oriented assistant.
+Goal:
+Collect required inputs from the user for scheduling a maintenance window.
+Rules:
+- Ask only for missing required fields.
+- Required fields: date, start_time, end_time.
+- Accept natural language (e.g., "tomorrow 5pm to 7pm").
+- Convert all outputs to ISO format:
+  - date: YYYY-MM-DD
+  - time: HH:MM (24h)
+Behavior:
+- Be concise. No explanations.
+- Ask one question at a time if data is missing.
+- Confirm only when all fields are collected.
+- Never output anything except valid JSON:
+{{
+  "date": "YYYY-MM-DD or null",
+  "start_time": "HH:MM or null",
+  "end_time": "HH:MM or null",
+  "status": "incomplete | complete",
+  "message": "short prompt or confirmation"
+}}
+"""}]
+    if pastdata:
+        prompt.append({"role": "assistant","content":pastdata})
+
+    prompt.append({"role": "user","content":query})
+
     return prompt
 
 
-def generate_answer(prompt):
+def generate_answer(messages):
     
     deploymentName = "gpt-4.1"
     apiVerion = "2024-12-01-preview"
@@ -43,12 +74,7 @@ def generate_answer(prompt):
 
     payload = {
         "model": "gpt-4.1",
-        "messages": [
-            {
-            "role": "user",
-            "content": prompt
-            }
-        ],
+        "messages": messages,
         "maxTokens": 110,
         "temperature": 0
     }
@@ -66,3 +92,4 @@ def generate_answer(prompt):
 
 #   query = "Hey!"
 #   print(generate_answer(query))
+
