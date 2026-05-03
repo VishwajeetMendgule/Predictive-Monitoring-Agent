@@ -1,99 +1,116 @@
 import pandas as pd
 import numpy as np
-import json
-import math
-import random
+import json,time,math,random
+import os
 from datetime import datetime, timedelta
 
-def generate_large_training_data():
-    start_time = datetime.now()
-    
-    # 1. CHANGE THIS for more/less data (e.g., 30 days = 30 * 24 * 60)
-    days_to_simulate = 14
-    total_minutes = 10  # days_to_simulate * 24 * 60 
+# Helper function to append to CSV without duplicating headers
+def append_csv(filename, row_data, columns):
+    df = pd.DataFrame([row_data], columns=columns)
+    # If file doesn't exist, create it and write headers. Otherwise, append.
+    if not os.path.isfile(filename):
+        df.to_csv(filename, index=False)
+    else:
+        df.to_csv(filename, mode='a', header=False, index=False)
+
+def live_log_generator():
     hostname = "prod-web-srv-01"
-
-    cpu_data, mem_data, net_data, logs = [], [], [], []
-
-    # 2. Decide randomly when the 3 failures will happen
-    # failure_start_times = random.sample(range(100, total_minutes - 60), 2)
-
-    failure_start_times = random.sample(range(1, total_minutes), 0) # Test dataset 
+    current_time = datetime.now()
     
-    # print(f"Generating {days_to_simulate} days of data...")
-    # print(f"Failures will occur at minutes: {sorted(failure_start_times)}")
+    print("🚀 Starting Live Log Generator...")
+    print("Writing 1 simulated minute of data every 3 seconds. Press Ctrl+C to stop.")
 
-    for i in range(total_minutes):
-        current_time = start_time + timedelta(minutes=i)
-        ts_str = current_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    # State Machine Variables
+    state = "NORMAL"
+    minutes_in_current_state = 0
 
-        # Create a "Daily Cycle" (peaks in the middle of the day, drops at night)
-        time_of_day_multiplier = (math.sin(i * (2 * math.pi / 1440)) + 1) / 2 # Waves between 0 and 1
+    while True:
+        try:
+            # 1. Advance simulation time by 1 minute
+            current_time += timedelta(minutes=1)
+            ts_str = current_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+            logs = []
 
-        # Check if we are currently inside a 30-minute failure window
-        is_failing = False
-        anomaly_progress = 0
-        for f_start in failure_start_times:
-            if f_start <= i < f_start + 30:
-                is_failing = True
-                anomaly_progress = i - f_start
-                break
+            # -------------------------------------------------
+            # STATE TRANSITION LOGIC
+            # -------------------------------------------------
+            minutes_in_current_state += 1
 
-        # -------------------------------------------------
-        # NORMAL BEHAVIOR (Fluctuates based on time of day)
-        # -------------------------------------------------
-        if not is_failing:
-            # CPU fluctuates between 20% (night) and 60% (day)
-            cpu = 20 + (40 * time_of_day_multiplier) + np.random.normal(0, 2)
-            # Memory stays relatively stable, climbs slightly during the day
-            mem = 40 + (20 * time_of_day_multiplier) + np.random.normal(0, 1)
-            # Network drops low at night, high during day
-            net = 100 + (600 * time_of_day_multiplier) + np.random.normal(0, 10)
+            if state == "NORMAL":
+                # After 4 normal minutes, introduce a 25% chance to start failing
+                if minutes_in_current_state >= 4 and random.random() < 0.25:
+                    state = "FAILING"
+                    minutes_in_current_state = 0
+                    print(f"\n[{ts_str}] ⚠️ SIMULATION TRIGGER: Anomaly Started!")
             
-            # Normal application logs (more logs during peak day hours)
-            if random.random() < (0.2 + 0.5 * time_of_day_multiplier):
-                logs.append({"timestamp": ts_str, "level": "INFO", "component": "system", "message": "Health check OK."})
-            if i % 15 == 0:
-                logs.append({"timestamp": ts_str, "level": "DEBUG", "component": "cache", "message": "Cache refreshed."})
+            elif state == "FAILING":
+                # Recover automatically after 5 minutes of failure
+                if minutes_in_current_state >= 5:
+                    state = "NORMAL"
+                    minutes_in_current_state = 0
+                    print(f"\n[{ts_str}] ✅ SIMULATION TRIGGER: System Recovered!")
+
+            # -------------------------------------------------
+            # DATA GENERATION BASED ON STATE
+            # -------------------------------------------------
+            # Create a subtle wave based on the time of day
+            total_minutes_today = current_time.hour * 60 + current_time.minute
+            time_of_day_multiplier = (math.sin(total_minutes_today * (2 * math.pi / 1440)) + 1) / 2 
+
+            if state == "NORMAL":
+                # Stable Metrics
+                cpu = 40 + (10 * time_of_day_multiplier) + np.random.normal(0, 2)
+                mem = 50 + (10 * time_of_day_multiplier) + np.random.normal(0, 1)
+                net = 100 + (300 * time_of_day_multiplier) + np.random.normal(0, 10)
                 
-        # -------------------------------------------------
-        # FAILURE BEHAVIOR (Memory Leak & CPU Spike)
-        # -------------------------------------------------
-        else:
-            # Metrics go crazy based on how long the failure has been happening (up to 30 mins)
-            cpu = 70 + (anomaly_progress * 1.5) + np.random.normal(0, 2) 
-            mem = 80 + (anomaly_progress * 1.0) + np.random.normal(0, 1) 
-            net = 50 + np.random.normal(0, 5) # Network crashes down
+                # Normal Logs
+                if random.random() < 0.6:
+                    logs.append({"timestamp": ts_str, "level": "INFO", "component": "system", "message": "Health check OK."})
             
-            # Application logs start screaming
-            logs.append({"timestamp": ts_str, "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."})
-            
-            # Final failure stages
-            if anomaly_progress > 20:
-                logs.append({"timestamp": ts_str, "level": "ERROR", "component": "system", "message": "OutOfMemoryError: Java heap space."})
-                logs.append({"timestamp": ts_str, "level": "ERROR", "component": "network", "message": "Connection timeout - failed to serve request."})
+            elif state == "FAILING":
+                # Metrics spike based on how long it's been failing
+                anomaly_progress = minutes_in_current_state
+                cpu = 75 + (anomaly_progress * 4) + np.random.normal(0, 2) 
+                mem = 85 + (anomaly_progress * 2) + np.random.normal(0, 1) 
+                net = 40 + np.random.normal(0, 5) # Network drops
+                
+                # Anomaly Logs
+                logs.append({"timestamp": ts_str, "level": "WARN", "component": "memory", "message": "High memory usage detected. GC overhead limit."})
+                
+                if anomaly_progress >= 4:
+                    logs.append({"timestamp": ts_str, "level": "ERROR", "component": "system", "message": "OutOfMemoryError: Java heap space."})
 
-        # Cap the values logically so they don't go below 0 or above 100
-        cpu = min(max(cpu, 0.0), 100.0)
-        mem = min(max(mem, 0.0), 100.0)
-        net = max(net, 0.0)
+            # Cap values between 0 and 100
+            cpu = min(max(cpu, 0.0), 100.0)
+            mem = min(max(mem, 0.0), 100.0)
+            net = max(net, 0.0)
 
-        # Append to lists
-        cpu_data.append([ts_str, "cpu_utilization_pct", round(cpu, 2), hostname])
-        mem_data.append([ts_str, "memory_utilization_pct", round(mem, 2), hostname])
-        net_data.append([ts_str, "network_io_mbit_sec", round(net, 2), hostname])
+            # -------------------------------------------------
+            # WRITE DATA TO FILES (APPEND MODE)
+            # -------------------------------------------------
+            # Append Metrics
+            append_csv("cpu_test.csv", [ts_str, "cpu_utilization_pct", round(cpu, 2), hostname], ["timestamp", "resource", "value", "hostname"])
+            append_csv("mem_test.csv", [ts_str, "memory_utilization_pct", round(mem, 2), hostname], ["timestamp", "resource", "value", "hostname"])
+            append_csv("net_test.csv", [ts_str, "network_io_mbit_sec", round(net, 2), hostname], ["timestamp", "resource", "value", "hostname"])
 
-    # Save Metrics to CSV
-    pd.DataFrame(cpu_data, columns=["timestamp", "resource", "value", "hostname"]).to_csv("cpu_test.csv", index=False)
-    pd.DataFrame(mem_data, columns=["timestamp", "resource", "value", "hostname"]).to_csv("mem_test.csv", index=False)
-    pd.DataFrame(net_data, columns=["timestamp", "resource", "value", "hostname"]).to_csv("net_test.csv", index=False)
+            # Append Logs
+            with open("app_logs_test.log", "a") as f:
+                for log in logs:
+                    f.write(json.dumps(log) + "\n")
 
-    # Save Logs to JSON lines
-    with open("app_logs_test.log", "w") as f:
-        for log in logs:
-            f.write(json.dumps(log) + "\n")
-            
-    print("✅ Successfully generated massive test datasets!")
+            # Console output so you can see what the generator is doing
+            print(f"[{ts_str}] Wrote Log -> CPU: {cpu:.1f}%, Mem: {mem:.1f}% | State: {state}")
 
-# Run the generator
-generate_large_training_data()
+            # Sleep for 3 seconds before generating the next minute of data
+            # (Change this to 60 if you want actual 1-minute intervals)
+            time.sleep(3) 
+
+        except KeyboardInterrupt:
+            print("\n🛑 Generator stopped by user.")
+            break
+        except Exception as e:
+            print(f"⚠️ Error generating data: {e}")
+            time.sleep(2)
+
+# Start generating
+live_log_generator()

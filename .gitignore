@@ -12,5 +12,12 @@ pagenv
 
 *.keras
 
-app_logs_train.log
+node_modules/
 
+logs.db
+
+*.log
+
+cpu_train.csv
+mem_train.csv
+net_train.csv
