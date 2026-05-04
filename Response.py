@@ -1,5 +1,6 @@
 import requests
 import os
+from datetime import datetime
 from dotenv import find_dotenv, load_dotenv
 
 load_dotenv(find_dotenv())
@@ -27,11 +28,13 @@ Logs: {currentlogs}
 
 
 def chat(query:str,pastdata:str = None):
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M (24h)")
     prompt = [{
             "role": "system",
-            "content":"""You are a task-oriented assistant.
+            "content":f"""You are a task-oriented assistant.
 Goal:
 Collect required inputs from the user for scheduling a maintenance window.
+Current System Time: {current_time}
 Rules:
 - Ask only for missing required fields.
 - Required fields: date, start_time, end_time.
@@ -48,8 +51,9 @@ Behavior:
   "date": "YYYY-MM-DD or null",
   "start_time": "HH:MM or null",
   "end_time": "HH:MM or null",
+  "reason": "extracted reason" or null,
   "status": "incomplete | complete",
-  "message": "short prompt or confirmation"
+  "message": "your reply asking for the next missing field, or confirming success"
 }}
 """}]
     if pastdata:

@@ -1,29 +1,36 @@
 import joblib 
 import numpy as np
 import os
+import logging
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # To Surppress all logs/warnings
 
 from tensorflow import keras 
 from tensorflow.keras.models import load_model
+import tensorflow as tf
 
-def create_lstm_sequences(data_array, time_steps=5):
+# 3. Silence the Python-level warnings (This fixes the GPU warning)
+tf.get_logger().setLevel('ERROR')
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
+
+def create_lstm_sequences(data, time_steps=5, lookahead_steps=3):
     """
-    Converts a 2D array into a 3D array [samples, time_steps, features] for LSTM training.
+    time_steps: How many past minutes to look at (e.g., 5)
+    lookahead_steps: How many minutes into the future to predict 
+                     (1 = 6th min, 2 = 7th min, 3 = 8th min)
     """
-    X, y = [], []
+    x, y = [], []
     
-    # Here basically we are dividing dataset such that 5 rows in x and 6th row in Y as target 
-    for i in range(len(data_array) - time_steps):
-        # The past 5 minutes
-        window = data_array[i : (i + time_steps)]
-        X.append(window)
+    # We must stop early enough so we don't reach out of bounds looking for 'y'
+    for i in range(len(data) - time_steps - (lookahead_steps - 1)):
+        # X gets the 5 consecutive minutes
+        x.append(data[i : i + time_steps])
         
-        # The 6th minute (the target we want to predict)
-        target = data_array[i + time_steps]
-        y.append(target)
+        # Y gets the single minute that is 'lookahead_steps' ahead
+        target_index = i + time_steps + (lookahead_steps - 1)
+        y.append(data[target_index])
         
-        # Finally creating it to a np array
-    return np.array(X), np.array(y)
+    return np.array(x), np.array(y)
 
 def train_predictionmodel(data):
 

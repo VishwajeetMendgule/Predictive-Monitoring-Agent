@@ -112,5 +112,12 @@ def live_log_generator():
             print(f"⚠️ Error generating data: {e}")
             time.sleep(2)
 
+
+print("🧹 Wiping old test data for a clean run...")
+files_to_delete = ['cpu_test.csv', 'mem_test.csv', 'net_test.csv', 'app_logs_test.log']
+
+for file in files_to_delete:
+    if os.path.exists(file):
+        os.remove(file)
 # Start generating
 live_log_generator()

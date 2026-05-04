@@ -4,7 +4,6 @@ from ReadLogs import readtestlogs,readtrainlogs
 
 def processed_logs(logs,cpu,memory,network):
     
-    # logs,cpu,memory,network = readtrainlogs()
 
     # conerting time to dattime format
     logs['timestamp'] = pd.to_datetime(logs['timestamp'])
@@ -16,6 +15,7 @@ def processed_logs(logs,cpu,memory,network):
     memory['timestamp'] = pd.to_datetime(memory['timestamp'])
     network['timestamp'] = pd.to_datetime(network['timestamp'])
     
+
     # Combining all metrics
     df = reduce(lambda left, right: pd.merge(left, right, on='timestamp', how='outer'), [cpu,memory,network])
     
