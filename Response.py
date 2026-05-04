@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 from dotenv import find_dotenv, load_dotenv
 import json
-from reponsemodel import get_response
 from DB_query import save_chat_message, get_chat_history, add_maintenance_window
 
 load_dotenv(find_dotenv())
@@ -133,8 +132,8 @@ def handle_maintenance_chat(user_input, session_id):
     prompt = chat(user_input, history_messages)
 
     # Get LLM response
-    # response = generate_answer(prompt)
-    response = get_response(prompt)
+    response = generate_answer(prompt)
+    
     
     if response:
         # Save assistant message

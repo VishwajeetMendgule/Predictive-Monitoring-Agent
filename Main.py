@@ -8,8 +8,6 @@ from DB_query import check_maintenance_mode
 import json,time,requests,sqlite3,threading
 import pandas as pd
 
-from reponsemodel import get_response
-
 
 def parse_llm_response(response_text):
     if not response_text:
@@ -118,7 +116,7 @@ while True:
                     current = json.dumps(current_dict, indent=2)
                     applogs = json.dumps(logs[['level','component','message']].iloc[-1].to_dict(), indent=2)
                     prompt = Model_prompt(future_data, current, applogs)
-                    llm_response = get_response(prompt)
+                    llm_response = generate_answer(prompt)
                     
                     if llm_response:
                         parsed_response = parse_llm_response(llm_response)
