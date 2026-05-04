@@ -1,4 +1,5 @@
 import requests
+from groq import Groq
 import os
 from datetime import datetime
 from dotenv import find_dotenv, load_dotenv
@@ -80,32 +81,28 @@ def extract_json_object(text):
     return None
 
 
-def generate_answer(messages):
-    
-    deploymentName = "gpt-4.1"
-    apiVerion = "2024-12-01-preview"
-    CHAT_MODEL_API = f"https://aicafe.hcl.com/AICafeService/api/v1/subscription/openai/deployments/{deploymentName}/chat/completions?api-version={apiVerion}"
-
-    
-    headers = {
-        "Content-Type": "application/json",
-        "api-key": os.getenv("api_Key")
-    }
-
-    payload = {
-        "model": "gpt-4.1",
-        "messages": messages,
-        "maxTokens": 110,
-        "temperature": 0
-    }
-
-    response = requests.post(url=CHAT_MODEL_API, headers=headers, json=payload)
-
-    if response.status_code == 200:
-        return response.json()['choices'][0]['message']['content']
-    else:
-        print(f"Chat model error {response.status_code}: {response.text}")
-        return None
+def generate_answer(prompt):
+    client = Groq(api_key=os.getenv("api_Key"))
+    try:
+         completion = client.chat.completions.create(
+         messages= prompt,
+         model="llama-3.3-70b-versatile",
+         max_tokens=110,
+         temperature=0.7,
+         top_p=1,
+         stream=True,
+         stop=None
+         )
+         reply = ''
+         for chunk in completion:
+             if chunk.choices[0].delta.content:
+                 reply += chunk.choices[0].delta.content
+         reply = reply.replace("</s>","")
+         return reply.strip()
+ 
+    except Exception as  e:
+         print(f"LLM Error: {e}")
+         return None
 
 def handle_maintenance_chat(user_input, session_id):
     """
