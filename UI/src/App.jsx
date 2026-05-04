@@ -26,6 +26,11 @@ export default function App() {
   const [queriedMetrics, setQueriedMetrics] = useState(null);
   const [queriedLogs, setQueriedLogs] = useState(null);
 
+  // Chat State
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
   // --- SOCKET CONNECTION (Live Feed) ---
   useEffect(() => {
     socket.on('telemetry_update', (data) => {
@@ -89,7 +94,7 @@ export default function App() {
             <Activity className="text-white w-6 h-6" />
           </div>
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 font-bold text-xl tracking-wide">
-            Predictive Monitoring Agent
+            NeuroPulse
           </span>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2">
@@ -101,6 +106,10 @@ export default function App() {
             <Terminal className="w-5 h-5 mr-3" />
             <span className="text-sm font-medium">Log Explorer</span>
           </div>
+          <div onClick={() => setActiveView('chat')} className={`flex items-center px-4 py-3 rounded-lg cursor-pointer transition-all ${activeView === 'chat' ? 'bg-blue-500/10 border-l-2 border-blue-500 text-blue-400 rounded-l-none' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+            <Bot className="w-5 h-5 mr-3" />
+            <span className="text-sm font-medium">AI Chat</span>
+          </div>
         </nav>
       </div>
 
@@ -111,7 +120,7 @@ export default function App() {
         <header className="h-20 flex items-center justify-between px-8 border-b border-slate-800/60 bg-slate-900/30 backdrop-blur-md sticky top-0 z-20 shrink-0">
           <div className="flex items-center">
             <h1 className="text-2xl font-bold text-white mr-4">
-              {activeView === 'live' ? 'System Feed' : 'Forensic Explorer'}
+              {activeView === 'live' ? 'System Feed' : activeView === 'explorer' ? 'Forensic Explorer' : 'AI Chat'}
             </h1>
             {activeView === 'live' && (
               alert ? (
@@ -393,6 +402,87 @@ export default function App() {
                 </div>
               )}
 
+            </div>
+          )}
+
+          {/* ========================================== */}
+          {/*                AI CHAT VIEW                */}
+          {/* ========================================== */}
+          {activeView === 'chat' && (
+            <div className="space-y-6">
+              <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 rounded-2xl p-6 flex flex-col h-[600px]">
+                <h3 className="text-white font-semibold mb-4 flex items-center text-lg shrink-0">
+                  <Bot className="w-5 h-5 mr-2 text-indigo-400" /> AI Maintenance Assistant
+                </h3>
+                
+                {/* Chat Messages */}
+                <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+                  {chatMessages.map((msg, index) => (
+                    <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                        msg.role === 'user' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-slate-700 text-slate-200'
+                      }`}>
+                        {msg.content}
+                      </div>
+                    </div>
+                  ))}
+                  {isChatLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-slate-700 text-slate-200 px-4 py-2 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Chat Input */}
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!chatInput.trim()) return;
+                  
+                  const userMessage = { role: 'user', content: chatInput };
+                  setChatMessages(prev => [...prev, userMessage]);
+                  setChatInput('');
+                  setIsChatLoading(true);
+                  
+                  try {
+                    const response = await fetch('http://localhost:3000/chat', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ message: userMessage.content, sessionId: 'default' })
+                    });
+                    const data = await response.json();
+                    const assistantMessage = { role: 'assistant', content: data.response };
+                    setChatMessages(prev => [...prev, assistantMessage]);
+                  } catch (error) {
+                    const errorMessage = { role: 'assistant', content: 'Error communicating with AI. Please try again.' };
+                    setChatMessages(prev => [...prev, errorMessage]);
+                  } finally {
+                    setIsChatLoading(false);
+                  }
+                }} className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Ask about maintenance windows..."
+                    className="flex-1 bg-slate-950/50 border border-slate-700 text-slate-200 text-sm rounded-lg p-3 outline-none placeholder-slate-600"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isChatLoading}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg px-4 py-3 transition-colors shadow-lg shadow-indigo-500/20 disabled:opacity-50"
+                  >
+                    Send
+                  </button>
+                </form>
+              </div>
             </div>
           )}
 

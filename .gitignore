@@ -4,17 +4,14 @@ pagenv
 
 .env
 
-*.pkl
 
 *.ipynb
 
 .vscode
 
-*.keras
 
 node_modules/
 
-logs.db
 
 *.log
 

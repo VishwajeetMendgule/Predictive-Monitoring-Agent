@@ -6,6 +6,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 const readline = require('readline');
+const { spawn } = require('child_process');
 
 const app = express();
 app.use(express.json());
@@ -80,6 +81,39 @@ app.get('/api/logs', async (req, res) => {
         } catch (e) {}
     }
     res.json(matchedLogs.reverse().slice(0, 100));
+});
+
+// 4. AI CHAT ENDPOINT
+app.post('/chat', (req, res) => {
+    const { message, sessionId } = req.body;
+    
+    const pythonProcess = spawn('python', ['chat_runner.py'], {
+        cwd: 'D:/Preditictive Agent',
+        stdio: ['pipe', 'pipe', 'pipe']
+    });
+
+    pythonProcess.stdin.write(JSON.stringify({ message, sessionId }));
+    pythonProcess.stdin.end();
+
+    let output = '';
+    pythonProcess.stdout.on('data', (data) => {
+        output += data.toString();
+    });
+    
+    pythonProcess.stderr.on('data', (data) => {
+        console.error('Python stderr:', data.toString());
+    });
+    
+    pythonProcess.on('close', (code) => {
+        if (code === 0) {
+            // Only respond with the final line to avoid startup prints affecting the result
+            const lines = output.trim().split(/\r?\n/).filter(Boolean);
+            const responseText = lines.length ? lines[lines.length - 1] : '';
+            res.json({ response: responseText });
+        } else {
+            res.status(500).json({ error: 'Failed to process chat' });
+        }
+    });
 });
 
 server.listen(3000, () => console.log(`🚀 Node.js Backend running on port 3000`));

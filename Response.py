@@ -2,6 +2,9 @@ import requests
 import os
 from datetime import datetime
 from dotenv import find_dotenv, load_dotenv
+import json
+from reponsemodel import get_response
+from DB_query import save_chat_message, get_chat_history, add_maintenance_window
 
 load_dotenv(find_dotenv())
 # Intigrating HCL AI cafe 
@@ -26,8 +29,7 @@ Logs: {currentlogs}
 """}]
     return prompt
 
-
-def chat(query:str,pastdata:str = None):
+def chat(query: str, history_messages: list = None):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M (24h)")
     prompt = [{
             "role": "system",
@@ -56,12 +58,26 @@ Behavior:
   "message": "your reply asking for the next missing field, or confirming success"
 }}
 """}]
-    if pastdata:
-        prompt.append({"role": "assistant","content":pastdata})
+    if history_messages:
+        prompt.append(history_messages[-1])  # Only include the last message to minimize tokens
 
     prompt.append({"role": "user","content":query})
 
     return prompt
+
+
+def extract_json_object(text):
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        start = text.find('{')
+        end = text.rfind('}')
+        if start >= 0 and end > start:
+            try:
+                return json.loads(text[start:end+1])
+            except json.JSONDecodeError:
+                pass
+    return None
 
 
 def generate_answer(messages):
@@ -91,9 +107,61 @@ def generate_answer(messages):
         print(f"Chat model error {response.status_code}: {response.text}")
         return None
 
+def handle_maintenance_chat(user_input, session_id):
+    """
+    Handles the maintenance window scheduling chat.
+    Saves chat history and inserts maintenance window when complete.
+    
+    Parameters:
+    - user_input: The user's message
+    - session_id: Unique session identifier
+    
+    Returns:
+    - Assistant's response message
+    """
+    # Get full past chat history
+    history = get_chat_history(session_id)
+    history_messages = []
+    if history:
+        history_messages = [{"role": role, "content": content} for role, content in history]
 
-# if __name__ == "__main__":
+    # Save user message
+    save_chat_message(session_id, 'user', user_input)
 
-#   query = "Hey!"
-#   print(generate_answer(query))
+    # Generate prompt
+    prompt = chat(user_input, history_messages)
 
+    # Get LLM response
+    # response = generate_answer(prompt)
+    response = get_response(prompt)
+    
+    if response:
+        # Save assistant message
+        save_chat_message(session_id, 'assistant', response)
+        
+        # Parse the response to check if complete
+        data = extract_json_object(response)
+        if not data:
+            return "Error parsing response. Please try again."
+
+        if data.get('status') == 'complete':
+            # Insert maintenance window
+            date = data['date']
+            start_time = data['start_time']
+            end_time = data['end_time']
+            reason = data.get('reason', 'Scheduled maintenance')
+            
+            # Combine date and times
+            start_datetime = f"{date} {start_time}:00"
+            end_datetime = f"{date} {end_time}:00"
+            
+            add_maintenance_window(start_datetime, end_datetime, reason)
+            
+            return f"Maintenance window scheduled successfully: {start_datetime} to {end_datetime} - {reason}"
+        else:
+            return data.get('message', 'Please provide the required information.')
+    else:
+        return "Error communicating with AI. Please try again."
+
+
+# print(get_response(chat("Schedule maintenance for tomorrow from 5pm to 7pm due to security patching.")))

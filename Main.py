@@ -4,33 +4,17 @@ from Process_logs import processed_logs
 from Anomaly_model import Anomaly_model 
 from Response import generate_answer,Model_prompt
 from Alert import send_alert_email
+from DB_query import check_maintenance_mode
 import json,time,requests,sqlite3,threading
 import pandas as pd
 
+from reponsemodel import get_response
 
-def check_maintenance_mode(current_log_time, db_connection):
-    """
-    Queries the database to see if the current log time falls within an active maintenance window.
-    Returns (True, reason) if in maintenance, (False, None) if not.
-    """
-    # Convert Pandas timestamp to standard SQLite string format: YYYY-MM-DD HH:MM:SS
-    time_str = current_log_time.strftime("%Y-%m-%d %H:%M:%S")
-    
-    query = """
-        SELECT reason FROM maintenance_windows 
-        WHERE ? BETWEEN start_time AND end_time
-        ORDER BY id DESC LIMIT 1
-    """
-    
-    cursor = db_connection.cursor()
-    cursor.execute(query, (time_str,))
-    result = cursor.fetchone()
-    
-    if result:
-        return True, result[0] # Return True and the reason
-    return False, None
 
 processed_time = pd.to_datetime('2000-01-01', utc=True)
+last_alert_time = None
+cached_llm_response = None
+alert_cooldown_minutes = 5
 
 while True:
 
@@ -52,7 +36,7 @@ while True:
 
         processed_time = test['timestamp'].iloc[-1]
         
-        conn = sqlite3.connect('logs.db')
+        conn = sqlite3.connect('D:/Preditictive Agent/logs.db')
 
         log_time = test['timestamp'].iloc[-1].strftime("%H:%M:%S")
 
@@ -65,7 +49,7 @@ while True:
 
         old_record.to_sql('server_metrics', conn, if_exists='append', index=False)
 
-        is_maintenance, maint_reason = check_maintenance_mode(processed_time, conn)
+        is_maintenance, maint_reason = check_maintenance_mode(processed_time,conn)
 
         conn.close()
 
@@ -94,44 +78,77 @@ while True:
                 payload["is_anomaly"] = True
                 predictions = lstm_model(test.tail(5)) # passing only last 5 mins 
 
-                # predictions = {"Predicted_CPU": f"{predictions[0,0]:.2f}%",
-                #            "Predicted_Memory": f"{predictions[0,1]:.2f}%",
-                #            "Predicted_Network": f"{predictions[0,2]:.2f}",
-                #            "Predicted_Errors": int(predictions[0, 4])}
-
                 payload["predicted_cpu"] = round(float(predictions[0, 0]), 1)
                 payload["predicted_memory"] = round(float(predictions[0, 1]), 1)
                 payload["predicted_network"] = round(float(predictions[0, 2]), 1)
 
-                # LLM Integration 
-
-                # future_data = json.dumps(predictions,indent=2)
-                current_dict = test[['cpu','memory','network','ERROR','WARN']].iloc[-1].to_dict()
-                current = json.dumps(current_dict,indent=2)
-                applogs = json.dumps(logs[['level','component','message']].iloc[-1].to_dict(),indent=2)
-                # prompt = Model_prompt(future_data,current,applogs)
-                # Response = json.loads(generate_answer(prompt))
-                # This will be in above format as for testing it hardcoded
-                payload["llm_response"] = {
-                        "severity": "CRITICAL",
-                        "failure_type": "JVM OutOfMemory / Thread Starvation",
-                        "RootCause": "Application is retaining objects in memory leading to GC overhead and network timeout.",
-                        "impactmins": 5,
-                        "RecommendedAction": "Trigger auto-scaling group and restart failing JVM instances."
-                    }
-                print(f"{predictions}")
-
-                admin_email = "vishwajeetmendgule08@outlook.com" 
+                # Alert Debounce / Cooldown Mechanism
+                current_timestamp = test['timestamp'].iloc[-1]
+                should_alert = False
                 
-                email_thread = threading.Thread(
-                    target=send_alert_email, 
-                    args=(payload, admin_email)
-                )
-                email_thread.start()
+                if last_alert_time is None:
+                    should_alert = True
+                else:
+                    # Use pandas timestamp subtraction for safe datetime operations
+                    time_since_last_alert = current_timestamp - last_alert_time
+                    if time_since_last_alert > pd.Timedelta(minutes=alert_cooldown_minutes):
+                        should_alert = True
+                
+                if should_alert:
+                    # Execute LLM call and email trigger
+                    print(f"🚨 Anomaly detected! Running LLM analysis...")
+                    
+                    future_data = json.dumps(predictions.tolist(), indent=2)
+                    current_dict = test[['cpu','memory','network','ERROR','WARN']].iloc[-1].to_dict()
+                    current = json.dumps(current_dict, indent=2)
+                    applogs = json.dumps(logs[['level','component','message']].iloc[-1].to_dict(), indent=2)
+                    prompt = Model_prompt(future_data, current, applogs)
+                    llm_response = get_response(prompt)
+                    
+                    if llm_response:
+                        cached_llm_response = json.loads(llm_response)
+                    else:
+                        cached_llm_response = {
+                            "severity": "UNKNOWN",
+                            "failure_type": "LLM Error",
+                            "RootCause": "Failed to get response from LLM.",
+                            "impactmins": 0,
+                            "RecommendedAction": "Check API key and network."
+                        }
+                    
+                    payload["llm_response"] = cached_llm_response
+                    last_alert_time = current_timestamp
+                    
+                    # Trigger email alert
+                    admin_email = "vishwajeetmendgule08@outlook.com" 
+                    email_thread = threading.Thread(
+                        target=send_alert_email, 
+                        args=(payload, admin_email)
+                    )
+                    email_thread.start()
+                    print(f"📧 Alert email queued.")
+                else:
+                    # Within cooldown window: use cached response
+                    time_since_last_alert = current_timestamp - last_alert_time
+                    print(f"⏱️  Anomaly persists (cooldown active: {time_since_last_alert.total_seconds():.0f}s/{alert_cooldown_minutes*60}s). Using cached LLM response.")
+                    if cached_llm_response:
+                        payload["llm_response"] = cached_llm_response
+                    else:
+                        payload["llm_response"] = {
+                            "severity": "WARNING",
+                            "failure_type": "Ongoing Anomaly",
+                            "RootCause": "Anomaly still active from previous analysis.",
+                            "impactmins": 0,
+                            "RecommendedAction": "Monitor system closely."
+                        }
+                
+                print(f"Predictions: {predictions}")
 
             else:
                 print("✅ System is stable.")
                 # This block will tigure only if anomaly is not deteceted 
+                last_alert_time = None
+                cached_llm_response = None
 
 
         response = requests.post('http://localhost:3000/api/telemetry', json=payload)
