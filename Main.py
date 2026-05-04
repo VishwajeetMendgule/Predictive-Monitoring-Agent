@@ -11,6 +11,21 @@ import pandas as pd
 from reponsemodel import get_response
 
 
+def parse_llm_response(response_text):
+    if not response_text:
+        return None
+    try:
+        return json.loads(response_text)
+    except json.JSONDecodeError:
+        start = response_text.find('{')
+        end = response_text.rfind('}')
+        if start >= 0 and end > start:
+            try:
+                return json.loads(response_text[start:end+1])
+            except json.JSONDecodeError:
+                pass
+    return None
+
 processed_time = pd.to_datetime('2000-01-01', utc=True)
 last_alert_time = None
 cached_llm_response = None
@@ -83,7 +98,7 @@ while True:
                 payload["predicted_network"] = round(float(predictions[0, 2]), 1)
 
                 # Alert Debounce / Cooldown Mechanism
-                current_timestamp = test['timestamp'].iloc[-1]
+                current_timestamp = processed_time
                 should_alert = False
                 
                 if last_alert_time is None:
@@ -106,7 +121,17 @@ while True:
                     llm_response = get_response(prompt)
                     
                     if llm_response:
-                        cached_llm_response = json.loads(llm_response)
+                        parsed_response = parse_llm_response(llm_response)
+                        if parsed_response:
+                            cached_llm_response = parsed_response
+                        else:
+                            cached_llm_response = {
+                                "severity": "UNKNOWN",
+                                "failure_type": "LLM Response Parse Error",
+                                "RootCause": "LLM returned invalid JSON response.",
+                                "impactmins": 0,
+                                "RecommendedAction": "Check LLM API response format."
+                            }
                     else:
                         cached_llm_response = {
                             "severity": "UNKNOWN",

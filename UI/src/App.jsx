@@ -313,7 +313,7 @@ export default function App() {
                     <input type="text" value={searchComponent} onChange={(e) => setSearchComponent(e.target.value)} placeholder="e.g. JVM, memory, timeout..." className="w-full bg-slate-950/50 border border-slate-700 text-slate-200 text-sm rounded-lg p-2.5 outline-none placeholder-slate-600" />
                   </div>
                   <button type="submit" disabled={isQuerying} className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm px-6 py-2.5 text-center transition-colors shadow-lg shadow-blue-500/20 disabled:opacity-50">
-                    {isQuerying ? 'Scanning Systems...' : 'Run Forensic Query'}
+                    {isQuerying ? 'Scanning Systems...' : 'Search Logs'}
                   </button>
                 </form>
               </div>
@@ -325,7 +325,7 @@ export default function App() {
                   <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mb-6 border border-slate-700/50">
                     <Database className="w-10 h-10 text-slate-400" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-300 mb-2">Hybrid Forensic Explorer</h3>
+                  <h3 className="text-xl font-bold text-slate-300 mb-2">Logs Explorer</h3>
                   <p className="max-w-md text-sm leading-relaxed">
                     Select your parameters to cross-reference server metrics (SQLite) with application behavior (Text Logs).
                   </p>

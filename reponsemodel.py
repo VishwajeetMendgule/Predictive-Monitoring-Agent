@@ -4,14 +4,14 @@ from dotenv import find_dotenv, load_dotenv
  
 load_dotenv(find_dotenv())
  
-client = Groq(api_key=os.getenv("apikey"))
+client = Groq(api_key=os.getenv("api_Key"))
  
 def get_response(prompt):
     try:
          completion = client.chat.completions.create(
          messages= prompt,
          model="llama-3.3-70b-versatile",
-         max_tokens=70,
+         max_tokens=100,
          temperature=0.7,
          top_p=1,
          stream=True,
@@ -25,4 +25,5 @@ def get_response(prompt):
          return reply.strip()
  
     except Exception as  e:
-          return e
+         print(f"LLM Error: {e}")
+         return None

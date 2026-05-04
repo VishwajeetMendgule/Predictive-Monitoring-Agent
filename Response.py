@@ -59,7 +59,8 @@ Behavior:
 }}
 """}]
     if history_messages:
-        prompt.append(history_messages[-1])  # Only include the last message to minimize tokens
+        # Preserve prior turns so the model remembers the last question and user answer
+        prompt.extend(history_messages)
 
     prompt.append({"role": "user","content":query})
 
